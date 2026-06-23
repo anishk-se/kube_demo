@@ -1,18 +1,18 @@
-# Prequistes Installation
-1. install docker desktop
+<h1 style="text-align: center;">Kubernetes</h1>
 
-2. install kind:
-# Detect architecture and download the binary
-[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://k8s.io
-[ $(uname -m) = aarch64 ] && curl -Lo ./kind https://k8s.io
+1. Install Docker Desktop
+   - Download and install from https://www.docker.com/products/docker-desktop
 
-# Make the binary executable
+2. Install kind:
+```bash
+[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://k8s.io/kind/kind-linux-amd64
 chmod +x ./kind
-
-# Move it to a directory in your executable PATH
 sudo mv ./kind /usr/local/bin/kind
+```
 
-3. install kubectl:
+3. Install kubectl:
+```bash
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
+```
