@@ -16,3 +16,12 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 ```
+
+1. Kubernetes Fundamentals
+What is a cluster?
+Control Plane vs Worker Nodes
+Pods
+Containers
+Namespaces
+Labels and Selectors
+Goal: Understand where your Spark driver and executors run.
