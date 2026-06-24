@@ -3,6 +3,86 @@
 > As a Spark developer deploying applications on Kubernetes, you don't need to learn Kubernetes at the depth of a Kubernetes administrator or DevOps engineer. This guide focuses on the essentials needed to deploy, run, and troubleshoot Spark jobs effectively.
 
 ---
+## Docker Commands
+- create Dockerfile
+```bash
+FROM node:22-alpine
+WORKDIR /app
+COPY . .
+RUN npm install
+CMD ["node", "src/index.js"]
+EXPOSE 3000
+```
+- Build an image
+```bash
+# -t tag/name the image
+# . current directory contains Dockerfile
+docker build -t kube_demo .
+```
+- Add tag to the image
+```bash
+docker tag kube_demo:latest anishse/kube_demo:latest
+```
+- Push tag to docker hub
+```bash
+docker push anishse/kube_demo:latest
+```
+- Run a container
+```bash
+# -d → run in background
+# -p → port mapping (host_port:container_port)
+# -e → environment variable
+docker run -d \
+  --name kube_demo \
+  -p 8080:8080 \
+  -e ENV=dev \
+  anishse/kube_demo:latest
+```
+- Check Running Containers
+```bash
+# running container
+docker ps
+# All containers
+docker ps -a
+```
+- Enter Container
+```bash
+docker exec -it kube_demo sh
+docker exec -it kube_demo bash
+```
+- Debugging Containers
+```bash
+docker logs kube_demo
+docker logs -f kube_demo
+# see the docker config
+docker inspect kube_demo
+```
+- Image Management
+```bash
+# list the images
+docker images
+docker image rm image_id
+docker rmi image_id
+# useful to forcefully delete
+docker rmi -f image_id
+```
+- Container cleanup
+```bash
+docker stop kube_demo
+docker rm kube_demo
+```
+## challenges of using standalone containers.
+Standalone containers are simple to use but have limitations such as lack of automatic scaling, self-healing, load balancing, centralized monitoring, high availability, and multi-node management. As the number of containers grows, deployment and operations become difficult, which is why container orchestration platforms like Kubernetes are commonly used in production environments.
+
+> Docker provides containerization, while Kubernetes provides orchestration and management of containers at scale. Docker creates containers; Kubernetes manages them.
+
+## Use Kubernetes When:
+1. ✅ Multiple services
+2. ✅ Multiple servers/nodes
+3. ✅ High availability needed
+4. ✅ Frequent deployments
+5. ✅ Need scaling and self-healing
+6. ✅ Spark workloads running in production
 
 ## 1. Kubernetes Fundamentals
 
@@ -14,6 +94,36 @@
 - **Containers**: Containerized applications (Docker images)
 - **Namespaces**: Virtual clusters for resource organization and isolation
 - **Labels & Selectors**: Metadata for organizing and selecting resources
+
+#### Cluster: Kubernetes infrastructure
+A Kubernetes cluster consists of a Control Plane that manages the cluster and Worker Nodes that run application workloads.
+> For Spark on Kubernetes, the Control Plane schedules Driver and Executor Pods onto Worker Nodes, while the Worker Nodes provide the CPU and memory resources needed to execute the Spark application.
+
+![image](./assets/k8s_architecture.png)
+
+1. Kublet cli   
+kubectl is the command-line interface (CLI) for Kubernetes. It allows you to interact with the Kubernetes cluster.
+
+2. Api Server   
+The Kubernetes API Server is the entry point to the Kubernetes cluster. All requests from users, tools such as kubectl, and applications such as Spark are sent to the API Server. It validates and processes those requests and coordinates with the rest of the cluster to perform actions like creating Pods, retrieving logs, or scheduling workloads.
+
+3. Controller manager   
+The Kubernetes Controller Manager is responsible for monitoring the cluster and ensuring that the actual state matches the desired state defined by users. If pods fail, nodes become unavailable, or replica counts differ from the desired configuration, the Controller Manager takes corrective actions to bring the cluster back to the desired state.
+
+4. Schedular  
+The Kubernetes Scheduler is responsible for assigning Pods to Worker Nodes. It evaluates available nodes based on resource requirements, constraints, and scheduling policies, then selects the most suitable node where the Pod should run.
+
+5. etcd  
+etcd is a distributed key-value store used by Kubernetes as its backing database. It stores the cluster's configuration, state, and metadata. The API Server interacts with etcd to read and update information about resources such as Pods, Deployments, Services, and Nodes.
+
+6. Kubelet  
+Kubelet is an agent that runs on every Kubernetes Worker Node. It receives Pod assignments from the control plane, communicates with the container runtime to start and stop containers, monitors Pod health, and reports node and Pod status back to the API Server.
+
+7. Kube-Proxy  
+kube-proxy is a networking component that runs on every Kubernetes Worker Node. It implements Kubernetes Service networking by routing traffic from Services to the appropriate Pods and providing basic load balancing across Pod replicas.
+
+8. Container runtime  
+A Container Runtime is the software responsible for pulling container images and running containers on Kubernetes Worker Nodes. Kubelet communicates with the Container Runtime to create, start, stop, and monitor containers. Common runtimes include docker(legacy), containerd(EKS, AKS, GKE) and CRI-O (Openshift).
 
 ### Learning Goal
 Understand where your Spark driver and executor pods run, and how the cluster manages them.
